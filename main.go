@@ -111,7 +111,6 @@ Loop:
 				break Loop
 			}
 			e := ws.WriteMessage(websocket.TextMessage, []byte(message))
-			// _, e := fmt.Fprintf(ws, "data: %s\n\n", message)
 			if e != nil {
 				log.Debugf("Error while writing to log stream: %v", e)
 				break Loop
@@ -219,6 +218,11 @@ func (h *handler) index(w http.ResponseWriter, r *http.Request) {
 		Containers: containers,
 	}
 	err = t.Execute(w, data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 }
 
 const indexTemplate = `
@@ -242,8 +246,8 @@ td.nowrap {
 <p>
 | <input type=checkbox id=stdout checked> stdout
 | <input type=checkbox id=stderr checked> stderr
-| <input type=checkbox id=timestamps> timestamps
-| <input type=checkbox id=follow checked>follow
+| <input type=checkbox id=timestamps> timestamps (download only)
+| <input type=checkbox id=follow checked>follow (view only)
 </p>
 <p>
 | tail:<input type="text" id=tail value="300" maxlength="8" size="6">
@@ -266,7 +270,7 @@ function text(name) {
   return "&" + name + "=" + document.getElementById(name).value
 }
 function viewLogs(id) {
-  window.location.href = "/containers?id=" + id + checkbox("stdout") + checkbox("stderr") + checkbox("timestamps") + checkbox("follow") + text("tail") + text("since") + text("until");
+  window.location.href = "/containers?id=" + id + checkbox("stdout") + checkbox("stderr") + checkbox("follow") + text("tail") + text("since") + text("until");
 }
 
 function downloadLogs(id) {
@@ -284,7 +288,7 @@ function downloadLogs(id) {
 </tr>
 {{ range .Containers }}
 <tr>
-<td>
+<td class="nowrap">
 <button type="button" onclick="viewLogs('{{ .ID }}');">view</button>
 <button type="button" onclick="downloadLogs('{{ .ID }}');">dl</button>
 </td>
@@ -310,12 +314,21 @@ func (h *handler) container(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	type Data struct {
-		StreamURL string
+		StreamURL  string
+		Timestamps bool
 	}
+
+	timestamps := opts.Timestamps
+	opts.Timestamps = true
 	data := Data{
-		StreamURL: fmt.Sprintf("/api/logs/stream?id=%v&%s", id, getLogsOptionsQuery(opts)),
+		StreamURL:  fmt.Sprintf("/api/logs/stream?id=%v&%s", id, getLogsOptionsQuery(opts)),
+		Timestamps: timestamps,
 	}
 	err = t.Execute(w, data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }
 
 const containerTemplate = `
@@ -329,10 +342,19 @@ const containerTemplate = `
 body {
   font-family: 'Roboto Mono', monospace;
 }
-pre {
+#log * {
   white-space: pre;
   font-size: 9pt;
 }
+
+.hidets span {
+  display: none;
+}
+span.ts {
+  margin-right: 1em;
+  color: #444;
+}
+
 button.on {
   background-color: green;
   color: white;
@@ -347,11 +369,13 @@ pre.wrap {
 </style>
 </head>
 <body>
-<h2>asd</h2>
+
+<p><strong id="interval"></strong></p>
 <button type="button" onclick="follow();">⇊follow⇊</button>
 <button type="button" id="autoscroll" onclick="toggleScroll();">auto scroll</button>
 <button type="button" id="wraplines" onclick="toggleWrap();">line wrapping</button>
-<pre id="log">
+<button type="button" id="timestamps" onclick="toggleTimestamps();">timestamps</button>
+<pre id="log" class="hidets">
 </pre>
 </body>
 <script>
@@ -359,7 +383,16 @@ pre.wrap {
 document.state = {
   'autoscroll': document.getElementById("autoscroll").checked,
   'wraplines': document.getElementById("wraplines").checked,
+  'timestamps': document.getElementById("timestamps").checked,
+  'ts_low': null,
+  'ts_high': null,
+
 };
+
+function updateInterval() {
+  var el = document.getElementById("interval");
+  el.innerText="" + document.state.ts_low + " - " + document.state.ts_high;
+}
 
 function buttonState(name) {
   var elm = document.getElementById(name);
@@ -374,11 +407,23 @@ function buttonState(name) {
 
 buttonState("autoscroll");
 buttonState("wraplines");
+buttonState("timestamps");
 
 function follow(){
   document.scrollingElement.scrollTo(0, document.scrollingElement.scrollHeight);
   document.state.autoscroll = true;
   buttonState("autoscroll")
+}
+
+function toggleTimestamps() {
+  document.state.timestamps = !document.state.timestamps;
+  var elm = document.getElementById("log");
+  if (document.state.timestamps) {
+    elm.classList.remove("hidets");
+  } else {
+    elm.classList.add("hidets");
+  }
+  buttonState("timestamps")
 }
 
 function toggleWrap(){
@@ -402,9 +447,14 @@ if (window.location.protocol === "https:") {
 } else {
   conn_url = "ws:";
 }
+
 conn_url += "//" + window.location.host + "{{ .StreamURL }}";
-var conn = new WebSocket(conn_url);
 var log = document.getElementById("log");
+var conn = new WebSocket(conn_url);
+
+conn.onopen = function(e) {
+  window.setInterval(updateInterval, 450);
+}
 conn.onerror = function() {
   conn.close();
 };
@@ -412,7 +462,19 @@ conn.onclose = function() {
   log.appendChild(document.createTextNode("\n\n-- CONNECTION TO LOG STREAM CLOSED --\n\n"));
 };
 conn.onmessage = function(e) {
-  log.appendChild(document.createTextNode(e.data))
+  var ts = e.data.slice(0,30);
+  if (document.state.ts_low == null || ts < document.state.ts_low) {
+    document.state.ts_low = ts;
+  };
+  if (document.state.ts_high == null || ts > document.state.ts_high) {
+    document.state.ts_high = ts;
+  };
+  var tse = document.createElement('span');
+  tse.textContent = ts;
+  tse.setAttribute('class', 'ts')
+  log.appendChild(tse)
+
+  log.appendChild(document.createTextNode(e.data.slice(31)))
   if (document.state.autoscroll && (window.innerHeight + window.scrollY) >= document.body.offsetHeight){
     document.scrollingElement.scrollTo(0, document.scrollingElement.scrollHeight);
   };
@@ -446,6 +508,7 @@ func getLogsOptionsQuery(opts types.ContainerLogsOptions) string {
 
 	return strings.Join(vs, "&")
 }
+
 func getLogsOptions(r *http.Request) types.ContainerLogsOptions {
 	opts := types.ContainerLogsOptions{
 		ShowStdout: true,
