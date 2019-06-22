@@ -11,11 +11,11 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/thomasf/docker-remote-logs/docker"
 	"github.com/docker/docker/api/types"
 	"github.com/go-pa/fenv"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
+	"github.com/thomasf/docker-remote-logs/docker"
 )
 
 type handler struct {
@@ -238,6 +238,43 @@ td.nowrap {
 </style>
 </head>
 <body>
+<div>
+<p>
+| <input type=checkbox id=stdout checked> stdout
+| <input type=checkbox id=stderr checked> stderr
+| <input type=checkbox id=timestamps> timestamps
+| <input type=checkbox id=follow checked>follow
+</p>
+<p>
+| tail:<input type="text" id=tail value="300" maxlength="8" size="6">
+| since:<input type="text" id=since >
+| until:<input type="text" id=until >
+</p>
+</div>
+<script>
+
+function checkbox(name) {
+  if (document.getElementById(name).checked ) {
+    return "&" + name + "=true"
+  }
+  return "&" + name + "=false"
+}
+function text(name) {
+  if (document.getElementById(name).value === "") {
+    return ""
+  }
+  return "&" + name + "=" + document.getElementById(name).value
+}
+function viewLogs(id) {
+  window.location.href = "/containers?id=" + id + checkbox("stdout") + checkbox("stderr") + checkbox("timestamps") + checkbox("follow") + text("tail") + text("since") + text("until");
+}
+
+function downloadLogs(id) {
+  window.location.href = "/api/logs/download?id=" + id + checkbox("stdout") + checkbox("stderr") + checkbox("timestamps") + text("tail") + text("since") + text("until");
+}
+
+
+</script>
 <table>
 <tr>
 <th>Logs</th>
@@ -248,8 +285,8 @@ td.nowrap {
 {{ range .Containers }}
 <tr>
 <td>
-<a href="/containers?id={{ .ID }}&follow=true&tail=300">view</a>
-<a href="/api/logs/download?id={{.ID }}">dl</a>
+<button type="button" onclick="viewLogs('{{ .ID }}');">view</button>
+<button type="button" onclick="downloadLogs('{{ .ID }}');">dl</button>
 </td>
 <td class="nowrap">{{ .Name }}</td>
 <td class="nowrap">{{ .Status }}</td>
@@ -308,9 +345,6 @@ pre.wrap {
   white-space: pre-wrap;
 }
 </style>
-<script>
-
-</script>
 </head>
 <body>
 <h2>asd</h2>
@@ -450,5 +484,6 @@ func getLogsOptions(r *http.Request) types.ContainerLogsOptions {
 			*p.v = v
 		}
 	}
+
 	return opts
 }
