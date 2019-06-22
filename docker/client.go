@@ -61,8 +61,9 @@ func (d *Client) ListContainers() ([]Container, error) {
 	return containers, nil
 }
 
-func (d *Client) WriteContainerLog(ctx context.Context, w io.Writer, id string) error {
-	options := types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Follow: false, Timestamps: false}
+func (d *Client) WriteContainerLog(ctx context.Context, w io.Writer, id string, options types.ContainerLogsOptions) error {
+	options.Follow = false
+	// options := types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Follow: false, Timestamps: false}
 	reader, err := d.cli.ContainerLogs(ctx, id, options)
 	if err != nil {
 		return err
