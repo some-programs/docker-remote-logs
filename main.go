@@ -29,7 +29,7 @@ func main() {
 	)
 	flag.StringVar(&addr, "addr", ":8080", "http service address")
 	flag.StringVar(&level, "level", "info", "logging level")
-	fenv.Prefix("DOZZLE_")
+	fenv.Prefix("DRLOG_")
 	fenv.MustParse()
 	flag.Parse()
 
@@ -342,7 +342,7 @@ const containerTemplate = `
 body {
   font-family: 'Roboto Mono', monospace;
 }
-#log * {
+pre, pre * {
   white-space: pre;
   font-size: 9pt;
 }
@@ -363,7 +363,7 @@ button.off {
   background-color: darkgray;
   color: #444;
 }
-pre.wrap {
+pre.wrap, pre.wrap * {
   white-space: pre-wrap;
 }
 </style>
