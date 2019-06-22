@@ -1,0 +1,16 @@
+---
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  image: "golang:1.12"
+  environment:
+    GO111MODULE: on
+  commands:
+  - go build -mod=vendor -v .
+  - go test -mod=vendor -v ./...
