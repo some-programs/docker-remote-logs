@@ -148,8 +148,8 @@ func (h *handler) downloadLogs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.txt", filename))
-
-	if err := h.client.WriteContainerLog(r.Context(), w, id); err != nil {
+	opts := getLogsOptions(r)
+	if err := h.client.WriteContainerLog(r.Context(), w, id, opts); err != nil {
 		log.Printf("error creating download: %v", err)
 	}
 }
