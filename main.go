@@ -244,18 +244,55 @@ td.nowrap {
 <body>
 <div>
 <p>
-| <input type=checkbox id=stdout checked> stdout
-| <input type=checkbox id=stderr checked> stderr
-| <input type=checkbox id=timestamps> timestamps (download only)
-| <input type=checkbox id=follow checked>follow (view only)
+| <input type=checkbox id=stdout checked onchange="updateFields(event)"> stdout
+| <input type=checkbox id=stderr checked onchange="updateFields(event)"> stderr
+| <input type=checkbox id=timestamps onchange="updateFields(event)"> timestamps (download only)
+| <input type=checkbox id=follow checked onchange="updateFields(event)">follow (view only)
 </p>
 <p>
-| tail:<input type="text" id=tail value="300" maxlength="8" size="6">
-| since:<input type="text" id=since >
-| until:<input type="text" id=until >
+| tail:<input type="text" id=tail value="300" maxlength="8" size="6" onchange="updateFields(event)">
+| since:<input type="text" id=since onchange="updateFields(event)">
+| until:<input type="text" id=until onchange="updateFields(event)">
 </p>
 </div>
 <script>
+
+function isChecked(name) {
+  return document.getElementById(name).checked;
+}
+
+function uncheck(name) {
+  document.getElementById(name).checked = false;
+}
+function empty(name) {
+  document.getElementById(name).value = "";
+}
+function hasText(name) {
+  return document.getElementById(name).value !== "";
+}
+
+
+function updateFields(e) {
+  var el = e.target;
+
+  if (el.id == "since" && hasText("since")) {
+    empty("tail");
+    uncheck("follow");
+  }
+  if (el.id == "until" && hasText("until")) {
+    empty("tail");
+    uncheck("follow");
+  }
+  if (el.id == "tail" && hasText("tail")) {
+    empty("since");
+    empty("until");
+  }
+  if (el.id == "follow" && isChecked("follow")) {
+    empty("since");
+    empty("until");
+  }
+}
+
 
 function checkbox(name) {
   if (document.getElementById(name).checked ) {
