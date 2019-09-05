@@ -28,7 +28,7 @@ github.com/docker/go-connections/sockets
 github.com/docker/go-connections/tlsconfig
 # github.com/docker/go-units v0.4.0
 github.com/docker/go-units
-# github.com/go-pa/fenv v0.0.0-20171018125626-e927b3ca2574
+# github.com/go-pa/fenv v0.2.0
 github.com/go-pa/fenv
 # github.com/gogo/protobuf v1.3.0
 github.com/gogo/protobuf/proto

@@ -20,7 +20,7 @@ require (
 	github.com/docker/docker v0.0.0-20170601211448-f5ec1e2936dc
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/go-pa/fenv v0.0.0-20171018125626-e927b3ca2574
+	github.com/go-pa/fenv v0.2.0
 	github.com/gogo/protobuf v1.3.0 // indirect
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/gorilla/mux v1.7.2 // indirect
