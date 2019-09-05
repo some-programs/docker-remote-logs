@@ -1,5 +1,6 @@
-# github.com/Microsoft/go-winio v0.4.12
+# github.com/Microsoft/go-winio v0.4.14
 github.com/Microsoft/go-winio
+github.com/Microsoft/go-winio/pkg/guid
 # github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.6.0-rc.1.0.20180820212402-02bf4a2887a4+incompatible
 github.com/docker/distribution/digestset
 github.com/docker/distribution/reference
@@ -29,9 +30,9 @@ github.com/docker/go-connections/tlsconfig
 github.com/docker/go-units
 # github.com/go-pa/fenv v0.0.0-20171018125626-e927b3ca2574
 github.com/go-pa/fenv
-# github.com/gogo/protobuf v1.2.1
+# github.com/gogo/protobuf v1.3.0
 github.com/gogo/protobuf/proto
-# github.com/gorilla/websocket v1.4.0
+# github.com/gorilla/websocket v1.4.1
 github.com/gorilla/websocket
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
@@ -44,11 +45,11 @@ github.com/opencontainers/image-spec/specs-go/v1
 github.com/pkg/errors
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
-# golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+# golang.org/x/net v0.0.0-20190827160401-ba9fcec4b297
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.0.0-20190621203818-d432491b9138
+# golang.org/x/sys v0.0.0-20190904154756-749cb33beabd
 golang.org/x/sys/unix
 golang.org/x/sys/windows
