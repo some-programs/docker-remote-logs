@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -227,118 +228,15 @@ func (h *handler) index(w http.ResponseWriter, r *http.Request) {
 
 }
 
-const indexTemplate = `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>container</title>
-<style>
-body {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 10pt;
-}
-td.nowrap {
-  white-space: nowrap;
-}
-</style>
-</head>
-<body>
-<div>
-<p>
-| <input type=checkbox id=stdout checked onchange="updateFields(event)"> stdout
-| <input type=checkbox id=stderr checked onchange="updateFields(event)"> stderr
-| <input type=checkbox id=timestamps onchange="updateFields(event)"> timestamps (download only)
-| <input type=checkbox id=follow checked onchange="updateFields(event)">follow (view only)
-</p>
-<p>
-| tail:<input type="text" id=tail value="300" maxlength="8" size="6" onchange="updateFields(event)">
-| since:<input type="text" id=since onchange="updateFields(event)">
-| until:<input type="text" id=until onchange="updateFields(event)">
-</p>
-</div>
-<script>
-
-function isChecked(name) {
-  return document.getElementById(name).checked;
+func mustReadFile(path string) string {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	return string(data)
 }
 
-function uncheck(name) {
-  document.getElementById(name).checked = false;
-}
-function empty(name) {
-  document.getElementById(name).value = "";
-}
-function hasText(name) {
-  return document.getElementById(name).value !== "";
-}
-
-
-function updateFields(e) {
-  var el = e.target;
-
-  if (el.id == "since" && hasText("since")) {
-    empty("tail");
-    uncheck("follow");
-  }
-  if (el.id == "until" && hasText("until")) {
-    empty("tail");
-    uncheck("follow");
-  }
-  if (el.id == "tail" && hasText("tail")) {
-    empty("since");
-    empty("until");
-  }
-  if (el.id == "follow" && isChecked("follow")) {
-    empty("since");
-    empty("until");
-  }
-}
-
-
-function checkbox(name) {
-  if (document.getElementById(name).checked ) {
-    return "&" + name + "=true"
-  }
-  return "&" + name + "=false"
-}
-function text(name) {
-  if (document.getElementById(name).value === "") {
-    return ""
-  }
-  return "&" + name + "=" + document.getElementById(name).value
-}
-function viewLogs(id) {
-  window.location.href = "/containers?id=" + id + checkbox("stdout") + checkbox("stderr") + checkbox("follow") + text("tail") + text("since") + text("until");
-}
-
-function downloadLogs(id) {
-  window.location.href = "/api/logs/download?id=" + id + checkbox("stdout") + checkbox("stderr") + checkbox("timestamps") + text("tail") + text("since") + text("until");
-}
-
-
-</script>
-<table>
-<tr>
-<th>Logs</th>
-<th>Name</th>
-<th>Status</th>
-<th>Command</th>
-</tr>
-{{ range .Containers }}
-<tr>
-<td class="nowrap">
-<button type="button" onclick="viewLogs('{{ .ID }}');">view</button>
-<button type="button" onclick="downloadLogs('{{ .ID }}');">dl</button>
-</td>
-<td class="nowrap">{{ .Name }}</td>
-<td class="nowrap">{{ .Status }}</td>
-<td>{{ .Command }}</td>
-</tr>
-{{ end }}
-</table>
-</body>
-</html>`
+var indexTemplate = mustReadFile("templates/index.html")
 
 func (h *handler) container(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
@@ -370,156 +268,7 @@ func (h *handler) container(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-const containerTemplate = `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>index</title>
-<link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
-<style>
-body {
-  font-family: 'Roboto Mono', monospace;
-}
-pre, pre * {
-  white-space: pre;
-  font-size: 9pt;
-}
-
-.hidets span {
-  display: none;
-}
-span.ts {
-  margin-right: 1em;
-  color: #444;
-}
-
-button.on {
-  background-color: green;
-  color: white;
-}
-button.off {
-  background-color: darkgray;
-  color: #444;
-}
-pre.wrap, pre.wrap * {
-  white-space: pre-wrap;
-}
-</style>
-</head>
-<body>
-
-<p><strong id="interval"></strong></p>
-<button type="button" onclick="follow();">⇊follow⇊</button>
-<button type="button" id="autoscroll" onclick="toggleScroll();">auto scroll</button>
-<button type="button" id="wraplines" onclick="toggleWrap();">line wrapping</button>
-<button type="button" id="timestamps" onclick="toggleTimestamps();">timestamps</button>
-<pre id="log" class="hidets">
-</pre>
-</body>
-<script>
-
-document.state = {
-  'autoscroll': document.getElementById("autoscroll").checked,
-  'wraplines': document.getElementById("wraplines").checked,
-  'timestamps': document.getElementById("timestamps").checked,
-  'ts_low': null,
-  'ts_high': null,
-
-};
-
-function updateInterval() {
-  var el = document.getElementById("interval");
-  el.innerText="" + document.state.ts_low + " - " + document.state.ts_high;
-}
-
-function buttonState(name) {
-  var elm = document.getElementById(name);
-  if (document.state[name]) {
-    elm.classList.add("on");
-    elm.classList.remove("off");
-  } else {
-    elm.classList.add("off");
-    elm.classList.remove("on");
-  }
-}
-
-buttonState("autoscroll");
-buttonState("wraplines");
-buttonState("timestamps");
-
-function follow(){
-  document.scrollingElement.scrollTo(0, document.scrollingElement.scrollHeight);
-  document.state.autoscroll = true;
-  buttonState("autoscroll")
-}
-
-function toggleTimestamps() {
-  document.state.timestamps = !document.state.timestamps;
-  var elm = document.getElementById("log");
-  if (document.state.timestamps) {
-    elm.classList.remove("hidets");
-  } else {
-    elm.classList.add("hidets");
-  }
-  buttonState("timestamps")
-}
-
-function toggleWrap(){
-  document.state.wraplines = !document.state.wraplines;
-  if (document.state.wraplines) {
-    document.getElementById("log").classList.add("wrap")
-  } else {
-    document.getElementById("log").classList.remove("wrap")
-  }
-  buttonState("wraplines");
-}
-
-function toggleScroll(){
-  document.state.autoscroll = !document.state.autoscroll;
-  buttonState("autoscroll")
-}
-
-var conn_url="";
-if (window.location.protocol === "https:") {
-  conn_url = "wss:";
-} else {
-  conn_url = "ws:";
-}
-
-conn_url += "//" + window.location.host + "{{ .StreamURL }}";
-var log = document.getElementById("log");
-var conn = new WebSocket(conn_url);
-
-conn.onopen = function(e) {
-  window.setInterval(updateInterval, 450);
-}
-conn.onerror = function() {
-  conn.close();
-};
-conn.onclose = function() {
-  log.appendChild(document.createTextNode("\n\n-- CONNECTION TO LOG STREAM CLOSED --\n\n"));
-};
-conn.onmessage = function(e) {
-  var ts = e.data.slice(0,30);
-  if (document.state.ts_low == null || ts < document.state.ts_low) {
-    document.state.ts_low = ts;
-  };
-  if (document.state.ts_high == null || ts > document.state.ts_high) {
-    document.state.ts_high = ts;
-  };
-  var tse = document.createElement('span');
-  tse.textContent = ts;
-  tse.setAttribute('class', 'ts')
-  log.appendChild(tse)
-
-  log.appendChild(document.createTextNode(e.data.slice(31)))
-  if (document.state.autoscroll && (window.innerHeight + window.scrollY) >= document.body.offsetHeight){
-    document.scrollingElement.scrollTo(0, document.scrollingElement.scrollHeight);
-  };
-};
-</script>
-</html>`
+var containerTemplate = mustReadFile("templates/container.html")
 
 func getLogsOptionsQuery(opts types.ContainerLogsOptions) string {
 
