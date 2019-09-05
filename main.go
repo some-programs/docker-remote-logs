@@ -14,6 +14,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/go-pa/fenv"
 	"github.com/gorilla/websocket"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/thomasf/docker-remote-logs/docker"
 )
@@ -41,6 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not connect to Docker Engine: %v", err)
 	}
+	http.Handle("/metrics", promhttp.Handler())
 	h := &handler{dockerClient}
 	http.HandleFunc("/api/containers", h.listContainers)
 	http.HandleFunc("/api/logs/stream", h.streamLogs)
