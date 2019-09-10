@@ -1,12 +1,23 @@
+/* global localStorage */
+
+function loadSettings() {
+  setText("tail", localStorage.getItem("tail") || 300);
+}
+
 function isChecked(name) {
   return document.getElementById(name).checked;
 }
-
 function uncheck(name) {
   document.getElementById(name).checked = false;
 }
 function empty(name) {
   document.getElementById(name).value = "";
+}
+function setText(name, text) {
+  document.getElementById(name).value = text;
+}
+function getText(name) {
+  return document.getElementById(name).value;
 }
 function hasText(name) {
   return document.getElementById(name).value !== "";
@@ -14,7 +25,9 @@ function hasText(name) {
 
 function updateFields(e) {
   var el = e.target;
-
+  if (hasText("tail")) {
+    localStorage.setItem("tail", getText("tail"));
+  }
   if (el.id == "since" && hasText("since")) {
     empty("tail");
     uncheck("follow");
@@ -72,13 +85,14 @@ function downloadLogs(id) {
 }
 
 function downloadZip() {
-  window.location.assign(
+  window.open(
     "/api/logs/zip?" +
       checkbox("stdout") +
       checkbox("stderr") +
       checkbox("timestamps") +
       text("tail") +
       text("since") +
-      text("until")
+      text("until"),
+    "download"
   );
 }
