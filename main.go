@@ -50,6 +50,7 @@ func main() {
 	http.HandleFunc("/api/logs/download", h.downloadLogs)
 	// http.HandleFunc("/api/events/stream", h.streamEvents)
 	http.HandleFunc("/containers", h.container)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", h.index)
 	srv := &http.Server{Addr: addr, Handler: http.DefaultServeMux}
 	go func() {
@@ -236,7 +237,9 @@ func mustReadFile(path string) string {
 	return string(data)
 }
 
-var indexTemplate = mustReadFile("templates/index.html")
+var (
+	indexTemplate = mustReadFile("templates/index.html")
+)
 
 func (h *handler) container(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
@@ -268,7 +271,9 @@ func (h *handler) container(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var containerTemplate = mustReadFile("templates/container.html")
+var (
+	containerTemplate = mustReadFile("templates/container.html")
+)
 
 func getLogsOptionsQuery(opts types.ContainerLogsOptions) string {
 

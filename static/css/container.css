@@ -1,0 +1,24 @@
+pre, pre * {
+  white-space: pre;
+  font-size: 9pt;
+}
+
+.hidets span {
+  display: none;
+}
+span.ts {
+  margin-right: 1em;
+  color: #444;
+}
+
+button.on {
+  background-color: green;
+  color: white;
+}
+button.off {
+  background-color: darkgray;
+  color: #444;
+}
+pre.wrap, pre.wrap * {
+  white-space: pre-wrap;
+}

@@ -18,8 +18,8 @@ require (
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v0.0.0-20170601211448-f5ec1e2936dc
-	github.com/docker/go-connections v0.4.0 // indirect
-	github.com/docker/go-units v0.4.0 // indirect
+	github.com/docker/go-connections v0.4.0
+	github.com/docker/go-units v0.4.0
 	github.com/go-pa/fenv v0.2.0
 	github.com/gogo/protobuf v1.3.0 // indirect
 	github.com/gorilla/mux v1.7.2 // indirect
@@ -28,6 +28,8 @@ require (
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/prometheus/client_golang v1.1.0
+	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
+	github.com/prometheus/common v0.6.0
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/net v0.0.0-20190827160401-ba9fcec4b297 // indirect
 	golang.org/x/sys v0.0.0-20190904154756-749cb33beabd // indirect

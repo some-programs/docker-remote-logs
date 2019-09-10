@@ -3,15 +3,9 @@
   <head>
     <meta charset="UTF-8">
     <title>container</title>
-    <style>
-      body {
-        font-family: 'Roboto Mono', monospace;
-        font-size: 10pt;
-      }
-      td.nowrap {
-        white-space: nowrap;
-      }
-    </style>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/common.css" type="text/css" />
+    <link rel="stylesheet" href="/static/css/index.css" type="text/css" />
   </head>
   <body>
     <div>
@@ -27,67 +21,8 @@
         | until:<input type="text" id=until onchange="updateFields(event)">
       </p>
     </div>
-    <script>
-
-      function isChecked(name) {
-        return document.getElementById(name).checked;
-      }
-
-      function uncheck(name) {
-        document.getElementById(name).checked = false;
-      }
-      function empty(name) {
-        document.getElementById(name).value = "";
-      }
-      function hasText(name) {
-        return document.getElementById(name).value !== "";
-      }
-
-
-      function updateFields(e) {
-        var el = e.target;
-
-        if (el.id == "since" && hasText("since")) {
-          empty("tail");
-          uncheck("follow");
-        }
-        if (el.id == "until" && hasText("until")) {
-          empty("tail");
-          uncheck("follow");
-        }
-        if (el.id == "tail" && hasText("tail")) {
-          empty("since");
-          empty("until");
-        }
-        if (el.id == "follow" && isChecked("follow")) {
-          empty("since");
-          empty("until");
-        }
-      }
-
-
-      function checkbox(name) {
-        if (document.getElementById(name).checked ) {
-          return "&" + name + "=true"
-        }
-        return "&" + name + "=false"
-      }
-      function text(name) {
-        if (document.getElementById(name).value === "") {
-          return ""
-        }
-        return "&" + name + "=" + document.getElementById(name).value
-      }
-      function viewLogs(id) {
-        window.location.href = "/containers?id=" + id + checkbox("stdout") + checkbox("stderr") + checkbox("follow") + text("tail") + text("since") + text("until");
-      }
-
-      function downloadLogs(id) {
-        window.location.href = "/api/logs/download?id=" + id + checkbox("stdout") + checkbox("stderr") + checkbox("timestamps") + text("tail") + text("since") + text("until");
-      }
-
-
-    </script>
+    <script type="text/javascript" src="/static/js/common.js"></script>
+    <script type="text/javascript" src="/static/js/index.js"></script>
     <table>
       <tr>
         <th>Logs</th>
