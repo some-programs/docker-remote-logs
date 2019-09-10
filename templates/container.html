@@ -7,7 +7,28 @@
     <link rel="stylesheet" href="/static/css/container.css" type="text/css" />
   </head>
   <body>
-    <p><strong id="interval"></strong></p>
+    <p><strong>{{ .Container.Name }}</strong> <strong id="interval"></strong></p>
+    <button type="button"  onclick="toggleSwitch();">→</button>
+    <div class="popup hidden" id="switch">
+      <table>
+        <tr>
+          <th>Logs</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Command</th>
+        </tr>
+        {{ range .Containers }}
+        <tr>
+          <td class="nowrap">
+            <button type="button" onclick="switchLogs('{{ .ID }}');">→</button>
+          </td>
+          <td class="nowrap">{{ .Name }}</td>
+          <td class="nowrap">{{ .Status }}</td>
+          <td>{{ .Command }}</td>
+        </tr>
+        {{ end }}
+      </table>
+    </div>
     <button type="button" onclick="follow();">⇊follow⇊</button>
     <button type="button" id="autoscroll" onclick="toggleScroll();">auto scroll</button>
     <button type="button" id="wraplines" onclick="toggleWrap();">line wrapping</button>

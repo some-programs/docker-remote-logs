@@ -46,15 +46,17 @@ function text(name) {
   return "&" + name + "=" + document.getElementById(name).value;
 }
 function viewLogs(id) {
-  window.location.href =
+  window.open(
     "/containers?id=" +
-    id +
-    checkbox("stdout") +
-    checkbox("stderr") +
-    checkbox("follow") +
-    text("tail") +
-    text("since") +
-    text("until");
+      id +
+      checkbox("stdout") +
+      checkbox("stderr") +
+      checkbox("follow") +
+      text("tail") +
+      text("since") +
+      text("until"),
+    "_blank"
+  );
 }
 
 function downloadLogs(id) {

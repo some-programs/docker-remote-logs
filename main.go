@@ -243,15 +243,30 @@ func (h *handler) container(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "id is required", http.StatusBadRequest)
 		return
 	}
+
+	containers, err := h.client.ListContainers()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	opts := getLogsOptions(r)
+
 	t, err := template.New("container").Parse(containerTemplate)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 	type Data struct {
+		Container  docker.Container
 		StreamURL  string
 		Timestamps bool
+		Containers []docker.Container
+	}
+	var container docker.Container
+	for _, c := range containers {
+		if c.ID == id {
+			container = c
+		}
 	}
 
 	timestamps := opts.Timestamps
@@ -259,6 +274,8 @@ func (h *handler) container(w http.ResponseWriter, r *http.Request) {
 	data := Data{
 		StreamURL:  fmt.Sprintf("/api/logs/stream?id=%v&%s", id, getLogsOptionsQuery(opts)),
 		Timestamps: timestamps,
+		Containers: containers,
+		Container:  container,
 	}
 	err = t.Execute(w, data)
 	if err != nil {

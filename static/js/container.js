@@ -1,3 +1,5 @@
+/* global conn_url, WebSocket, URL */
+
 document.state = {
   autoscroll: document.getElementById("autoscroll").checked,
   wraplines: document.getElementById("wraplines").checked,
@@ -5,6 +7,17 @@ document.state = {
   ts_low: null,
   ts_high: null
 };
+
+function toggleSwitch() {
+  const el = document.getElementById("switch");
+  el.classList.toggle("hidden")
+}
+
+function switchLogs(id) {
+  const u = new URL(window.location);
+  u.searchParams.set("id", id);
+  window.location.href = u.href;
+}
 
 function updateInterval() {
   var el = document.getElementById("interval");

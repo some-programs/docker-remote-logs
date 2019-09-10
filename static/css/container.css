@@ -1,6 +1,5 @@
 pre, pre * {
   white-space: pre;
-  font-size: 9pt;
 }
 
 .hidets span {
@@ -21,4 +20,16 @@ button.off {
 }
 pre.wrap, pre.wrap * {
   white-space: pre-wrap;
+}
+
+.popup {
+  background-color: white;
+  border: 1px solid black;
+  padding: 10px;
+  /* margin: 10px; */
+  position: absolute;
+}
+
+.hidden {
+    display: none;
 }
