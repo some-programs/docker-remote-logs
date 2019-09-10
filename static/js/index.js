@@ -12,7 +12,6 @@ function hasText(name) {
   return document.getElementById(name).value !== "";
 }
 
-
 function updateFields(e) {
   var el = e.target;
 
@@ -34,23 +33,38 @@ function updateFields(e) {
   }
 }
 
-
 function checkbox(name) {
-  if (document.getElementById(name).checked ) {
-    return "&" + name + "=true"
+  if (document.getElementById(name).checked) {
+    return "&" + name + "=true";
   }
-  return "&" + name + "=false"
+  return "&" + name + "=false";
 }
 function text(name) {
   if (document.getElementById(name).value === "") {
-    return ""
+    return "";
   }
-  return "&" + name + "=" + document.getElementById(name).value
+  return "&" + name + "=" + document.getElementById(name).value;
 }
 function viewLogs(id) {
-  window.location.href = "/containers?id=" + id + checkbox("stdout") + checkbox("stderr") + checkbox("follow") + text("tail") + text("since") + text("until");
+  window.location.href =
+    "/containers?id=" +
+    id +
+    checkbox("stdout") +
+    checkbox("stderr") +
+    checkbox("follow") +
+    text("tail") +
+    text("since") +
+    text("until");
 }
 
 function downloadLogs(id) {
-  window.location.href = "/api/logs/download?id=" + id + checkbox("stdout") + checkbox("stderr") + checkbox("timestamps") + text("tail") + text("since") + text("until");
+  window.location.href =
+    "/api/logs/download?id=" +
+    id +
+    checkbox("stdout") +
+    checkbox("stderr") +
+    checkbox("timestamps") +
+    text("tail") +
+    text("since") +
+    text("until");
 }

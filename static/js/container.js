@@ -1,15 +1,14 @@
 document.state = {
-  'autoscroll': document.getElementById("autoscroll").checked,
-  'wraplines': document.getElementById("wraplines").checked,
-  'timestamps': document.getElementById("timestamps").checked,
-  'ts_low': null,
-  'ts_high': null,
-
+  autoscroll: document.getElementById("autoscroll").checked,
+  wraplines: document.getElementById("wraplines").checked,
+  timestamps: document.getElementById("timestamps").checked,
+  ts_low: null,
+  ts_high: null
 };
 
 function updateInterval() {
   var el = document.getElementById("interval");
-  el.innerText="" + document.state.ts_low + " - " + document.state.ts_high;
+  el.innerText = "" + document.state.ts_low + " - " + document.state.ts_high;
 }
 
 function buttonState(name) {
@@ -27,10 +26,10 @@ buttonState("autoscroll");
 buttonState("wraplines");
 buttonState("timestamps");
 
-function follow(){
+function follow() {
   document.scrollingElement.scrollTo(0, document.scrollingElement.scrollHeight);
   document.state.autoscroll = true;
-  buttonState("autoscroll")
+  buttonState("autoscroll");
 }
 
 function toggleTimestamps() {
@@ -41,22 +40,22 @@ function toggleTimestamps() {
   } else {
     elm.classList.add("hidets");
   }
-  buttonState("timestamps")
+  buttonState("timestamps");
 }
 
-function toggleWrap(){
+function toggleWrap() {
   document.state.wraplines = !document.state.wraplines;
   if (document.state.wraplines) {
-    document.getElementById("log").classList.add("wrap")
+    document.getElementById("log").classList.add("wrap");
   } else {
-    document.getElementById("log").classList.remove("wrap")
+    document.getElementById("log").classList.remove("wrap");
   }
   buttonState("wraplines");
 }
 
-function toggleScroll(){
+function toggleScroll() {
   document.state.autoscroll = !document.state.autoscroll;
-  buttonState("autoscroll")
+  buttonState("autoscroll");
 }
 
 var log = document.getElementById("log");
@@ -64,7 +63,7 @@ var conn = new WebSocket(conn_url);
 
 conn.onopen = function(e) {
   window.setInterval(updateInterval, 450);
-}
+};
 conn.onerror = function() {
   conn.close();
 };
@@ -72,20 +71,20 @@ conn.onclose = function() {
   log.appendChild(document.createTextNode("\n\n-- CONNECTION TO LOG STREAM CLOSED --\n\n"));
 };
 conn.onmessage = function(e) {
-  var ts = e.data.slice(0,30);
+  var ts = e.data.slice(0, 30);
   if (document.state.ts_low == null || ts < document.state.ts_low) {
     document.state.ts_low = ts;
-  };
+  }
   if (document.state.ts_high == null || ts > document.state.ts_high) {
     document.state.ts_high = ts;
-  };
-  var tse = document.createElement('span');
+  }
+  var tse = document.createElement("span");
   tse.textContent = ts;
-  tse.setAttribute('class', 'ts')
-  log.appendChild(tse)
+  tse.setAttribute("class", "ts");
+  log.appendChild(tse);
 
-  log.appendChild(document.createTextNode(e.data.slice(31)))
-  if (document.state.autoscroll && (window.innerHeight + window.scrollY) >= document.body.offsetHeight){
+  log.appendChild(document.createTextNode(e.data.slice(31)));
+  if (document.state.autoscroll && window.innerHeight + window.scrollY >= document.body.offsetHeight) {
     document.scrollingElement.scrollTo(0, document.scrollingElement.scrollHeight);
-  };
+  }
 };
