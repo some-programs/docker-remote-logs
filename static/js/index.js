@@ -70,3 +70,15 @@ function downloadLogs(id) {
     text("since") +
     text("until");
 }
+
+function downloadZip() {
+  window.location.assign(
+    "/api/logs/zip?" +
+      checkbox("stdout") +
+      checkbox("stderr") +
+      checkbox("timestamps") +
+      text("tail") +
+      text("since") +
+      text("until")
+  );
+}

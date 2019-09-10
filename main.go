@@ -1,6 +1,7 @@
 package main
 
 import (
+	"archive/zip"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -45,6 +46,7 @@ func main() {
 	http.HandleFunc("/api/containers", h.listContainers)
 	http.HandleFunc("/api/logs/stream", h.streamLogs)
 	http.HandleFunc("/api/logs/download", h.downloadLogs)
+	http.HandleFunc("/api/logs/zip", h.downloadZip)
 	// http.HandleFunc("/api/events/stream", h.streamEvents)
 	http.HandleFunc("/containers", h.container)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -151,6 +153,35 @@ func (h *handler) downloadLogs(w http.ResponseWriter, r *http.Request) {
 	opts := getLogsOptions(r)
 	if err := h.client.WriteContainerLog(r.Context(), w, id, opts); err != nil {
 		log.Printf("error creating download: %v", err)
+	}
+}
+
+func (h *handler) downloadZip(w http.ResponseWriter, r *http.Request) {
+	dockerClient := docker.NewClient()
+	containers, err := dockerClient.ListContainers()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	opts := getLogsOptions(r)
+	filename := fmt.Sprintf("docker-remote-logs.zip")
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+
+	z := zip.NewWriter(w)
+	defer z.Close()
+	for _, c := range containers {
+		f, err := z.Create(fmt.Sprintf("%s.txt", c.Name))
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if err := h.client.WriteContainerLog(r.Context(), f, c.ID, opts); err != nil {
+			log.Printf("error creating log in archive: %v", err)
+			return
+		}
 	}
 }
 
