@@ -5,13 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"text/template"
-
-	"log"
 
 	"github.com/docker/docker/api/types"
 	"github.com/go-pa/fenv"
