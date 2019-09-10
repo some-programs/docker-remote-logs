@@ -8,15 +8,15 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
 	"strings"
 	"text/template"
+
+	"log"
 
 	"github.com/docker/docker/api/types"
 	"github.com/go-pa/fenv"
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
 	"github.com/thomasf/docker-remote-logs/docker"
 )
 
@@ -26,17 +26,15 @@ type handler struct {
 
 func main() {
 	var (
-		addr  = ""
-		level = ""
+		addr = ""
 	)
 	flag.StringVar(&addr, "addr", ":8080", "http service address")
-	flag.StringVar(&level, "level", "info", "logging level")
 	fenv.Prefix("DRLOG_")
 	fenv.MustParse()
 	flag.Parse()
 
-	l, _ := log.ParseLevel(level)
-	log.SetLevel(l)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	dockerClient := docker.NewClient()
 	_, err := dockerClient.ListContainers()
 
@@ -54,7 +52,7 @@ func main() {
 	http.HandleFunc("/", h.index)
 	srv := &http.Server{Addr: addr, Handler: http.DefaultServeMux}
 	go func() {
-		log.Infof("Accepting connections on %s", srv.Addr)
+		log.Printf("Accepting connections on %s", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil {
 			if err == http.ErrServerClosed {
 				log.Println("server closed")
@@ -67,7 +65,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	signal.Notify(c, os.Kill)
 	<-c
-	log.Infof("Shutting down...")
+	log.Printf("Shutting down...")
 	srv.Close()
 }
 
@@ -106,7 +104,7 @@ func (h *handler) streamLogs(w http.ResponseWriter, r *http.Request) {
 	}
 	opts := getLogsOptions(r)
 	messages, errCh := h.client.ContainerLogs(r.Context(), id, opts)
-	log.Debugf("Starting to stream logs for %s", id)
+	log.Printf("Starting to stream logs for %s", id)
 Loop:
 	for {
 		select {
@@ -116,15 +114,14 @@ Loop:
 			}
 			e := ws.WriteMessage(websocket.TextMessage, []byte(message))
 			if e != nil {
-				log.Debugf("Error while writing to log stream: %v", e)
+				log.Printf("Error while writing to log stream: %v", e)
 				break Loop
 			}
 		case e := <-errCh:
-			log.Debugf("Error while reading from log stream: %v", e)
+			log.Printf("Error while reading from log stream: %v", e)
 			break Loop
 		}
 	}
-	log.WithField("NumGoroutine", runtime.NumGoroutine()).Debug("runtime stats")
 }
 
 func (h *handler) downloadLogs(w http.ResponseWriter, r *http.Request) {
@@ -180,16 +177,16 @@ Loop:
 			}
 			switch message.Action {
 			case "connect", "disconnect", "create", "destroy", "start", "stop":
-				log.Debugf("Triggering docker event: %v", message.Action)
+				log.Printf("Triggering docker event: %v", message.Action)
 				_, err := fmt.Fprintf(w, "event: containers-changed\ndata: %s\n\n", message.Action)
 
 				if err != nil {
-					log.Debugf("Error while writing to event stream: %v", err)
+					log.Printf("Error while writing to event stream: %v", err)
 					break
 				}
 				f.Flush()
 			default:
-				log.Debugf("Ignoring docker event: %v", message.Action)
+				log.Printf("Ignoring docker event: %v", message.Action)
 			}
 		case <-ctx.Done():
 			break Loop
