@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# watch/build/restart using watchexec
+
+exec watchexec -e .go,.html,.js,.css -s SIGKILL -r  -- go run main.go
