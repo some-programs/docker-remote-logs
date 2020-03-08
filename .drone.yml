@@ -8,9 +8,7 @@ platform:
 
 steps:
 - name: build
-  image: "golang:1.12"
-  environment:
-    GO111MODULE: on
+  image: "golang:1.14"
   commands:
-  - go build -mod=vendor -v .
-  - go test -mod=vendor -v ./...
+  - go build -v .
+  - go test -v ./...
