@@ -1,4 +1,4 @@
-from golang:1.13 as builder
+from golang:1.14 as builder
 add . /src
 workdir /src
 env GO111MODULE on

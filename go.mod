@@ -1,6 +1,6 @@
 module github.com/thomasf/docker-remote-logs
 
-go 1.13
+go 1.14
 
 replace github.com/docker/docker v0.0.0-20170601211448-f5ec1e2936dc => github.com/docker/engine v0.0.0-20180718150940-a3ef7e9a9bda
 
