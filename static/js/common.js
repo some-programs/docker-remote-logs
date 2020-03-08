@@ -1,1 +1,2 @@
-// common.js
+"use strict";
+// common.ts
