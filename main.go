@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
@@ -102,6 +103,12 @@ func (h *handler) streamLogs(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 
+	const (
+		pongWait   = time.Minute
+		pingPeriod = (pongWait * 9) / 10
+		writeWait  = 10 * time.Second
+	)
+
 	ws, err := streamLogsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		if _, ok := err.(websocket.HandshakeError); !ok {
@@ -109,6 +116,13 @@ func (h *handler) streamLogs(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	defer ws.Close()
+	ws.SetPongHandler(func(string) error {
+		// log.Println("pong")
+		ws.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
+
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		http.Error(w, "id is required", http.StatusBadRequest)
@@ -117,26 +131,62 @@ func (h *handler) streamLogs(w http.ResponseWriter, r *http.Request) {
 	opts := getLogsOptions(r)
 	messages, errCh := h.client.ContainerLogs(ctx, id, opts)
 	log.Printf("Starting to stream logs for %s", id)
-Loop:
-	for {
-		select {
-		case message, ok := <-messages:
-			if !ok {
-				break Loop
+
+	ws.SetReadDeadline(time.Now().Add(pongWait))
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		for {
+			// read must be called to get pong messages handeled
+			messageType, p, err := ws.ReadMessage()
+			if err != nil {
+				log.Println(err)
+				return
 			}
-			e := ws.WriteMessage(websocket.TextMessage, []byte(message))
-			if e != nil {
-				log.Printf("Error while writing to log stream: %v", e)
-				break Loop
-			}
-		case e := <-errCh:
-			log.Printf("Error while reading from log stream: %v", e)
-			break Loop
-		case <-ctx.Done():
-			log.Println("client closed connection")
-			return
+			_ = messageType
+			_ = p
+			// log.Println("read message")
 		}
-	}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		ticker := time.NewTicker(pingPeriod)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				// log.Println("ping")
+				err := ws.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(writeWait))
+				if err != nil {
+					log.Println("err", err)
+					return
+				}
+			case message, ok := <-messages:
+				if !ok {
+					return
+				}
+				ws.SetWriteDeadline(time.Now().Add(writeWait))
+				e := ws.WriteMessage(websocket.TextMessage, []byte(message))
+				if e != nil {
+					log.Printf("Error while writing to log stream: %v", e)
+					return
+				}
+			case e := <-errCh:
+				log.Printf("Error while reading from log stream: %v", e)
+				return
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+	wg.Wait()
+	// log.Println("Stopped streaming log")
 }
 
 func (h *handler) downloadLogs(w http.ResponseWriter, r *http.Request) {
