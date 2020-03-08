@@ -92,15 +92,17 @@ func (h *handler) listContainers(w http.ResponseWriter, r *http.Request) {
 }
 
 var (
-	strreamLogsUpgrader = websocket.Upgrader{
+	streamLogsUpgrader = websocket.Upgrader{
 		ReadBufferSize:  10 * 1024,
 		WriteBufferSize: 10 * 1024,
 	}
 )
 
 func (h *handler) streamLogs(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	ws, err := strreamLogsUpgrader.Upgrade(w, r, nil)
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+
+	ws, err := streamLogsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		if _, ok := err.(websocket.HandshakeError); !ok {
 			log.Println(err)
@@ -130,12 +132,17 @@ Loop:
 		case e := <-errCh:
 			log.Printf("Error while reading from log stream: %v", e)
 			break Loop
+		case <-ctx.Done():
+			log.Println("client closed connection")
+			return
 		}
 	}
 }
 
 func (h *handler) downloadLogs(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		http.Error(w, "id is required", http.StatusBadRequest)
@@ -167,7 +174,9 @@ func (h *handler) downloadLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) downloadZip(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+
 	dockerClient := docker.NewClient()
 	containers, err := dockerClient.ListContainers(ctx)
 	if err != nil {
@@ -238,7 +247,9 @@ Loop:
 }
 
 func (h *handler) index(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+
 	if r.URL.Path != "/" {
 		http.Error(w, "not found", 404)
 		return
@@ -281,7 +292,9 @@ var (
 )
 
 func (h *handler) container(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		http.Error(w, "id is required", http.StatusBadRequest)
