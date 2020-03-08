@@ -27,8 +27,8 @@ func NewClient() *Client {
 	return &Client{cli}
 }
 
-func (d *Client) ListContainers() ([]Container, error) {
-	list, err := d.cli.ContainerList(context.Background(), types.ContainerListOptions{})
+func (d *Client) ListContainers(ctx context.Context) ([]Container, error) {
+	list, err := d.cli.ContainerList(ctx, types.ContainerListOptions{})
 	if err != nil {
 		return nil, err
 	}

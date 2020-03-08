@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"os/signal"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/go-pa/fenv"
@@ -35,12 +37,17 @@ func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
+	ctx := context.Background()
 	dockerClient := docker.NewClient()
-	_, err := dockerClient.ListContainers()
-
-	if err != nil {
-		log.Fatalf("Could not connect to Docker Engine: %v", err)
+	{
+		ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
+		_, err := dockerClient.ListContainers(ctx)
+		if err != nil {
+			log.Fatalf("Could not connect to Docker Engine: %v", err)
+		}
 	}
+
 	http.Handle("/metrics", promhttp.Handler())
 	h := &handler{dockerClient}
 	http.HandleFunc("/api/containers", h.listContainers)
@@ -71,7 +78,8 @@ func main() {
 }
 
 func (h *handler) listContainers(w http.ResponseWriter, r *http.Request) {
-	containers, err := h.client.ListContainers()
+	ctx := r.Context()
+	containers, err := h.client.ListContainers(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -91,6 +99,7 @@ var (
 )
 
 func (h *handler) streamLogs(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	ws, err := strreamLogsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		if _, ok := err.(websocket.HandshakeError); !ok {
@@ -104,7 +113,7 @@ func (h *handler) streamLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	opts := getLogsOptions(r)
-	messages, errCh := h.client.ContainerLogs(r.Context(), id, opts)
+	messages, errCh := h.client.ContainerLogs(ctx, id, opts)
 	log.Printf("Starting to stream logs for %s", id)
 Loop:
 	for {
@@ -126,13 +135,14 @@ Loop:
 }
 
 func (h *handler) downloadLogs(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		http.Error(w, "id is required", http.StatusBadRequest)
 		return
 	}
 	dockerClient := docker.NewClient()
-	containers, err := dockerClient.ListContainers()
+	containers, err := dockerClient.ListContainers(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -157,8 +167,9 @@ func (h *handler) downloadLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) downloadZip(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	dockerClient := docker.NewClient()
-	containers, err := dockerClient.ListContainers()
+	containers, err := dockerClient.ListContainers(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -186,6 +197,7 @@ func (h *handler) downloadZip(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) streamEvents(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	f, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
@@ -195,7 +207,6 @@ func (h *handler) streamEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Transfer-Encoding", "chunked")
-	ctx := r.Context()
 	messages, err := h.client.Events(ctx)
 
 Loop:
@@ -227,11 +238,12 @@ Loop:
 }
 
 func (h *handler) index(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	if r.URL.Path != "/" {
 		http.Error(w, "not found", 404)
 		return
 	}
-	containers, err := h.client.ListContainers()
+	containers, err := h.client.ListContainers(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -269,13 +281,14 @@ var (
 )
 
 func (h *handler) container(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		http.Error(w, "id is required", http.StatusBadRequest)
 		return
 	}
 
-	containers, err := h.client.ListContainers()
+	containers, err := h.client.ListContainers(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
