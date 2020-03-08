@@ -1,8 +1,7 @@
 from golang:1.14 as builder
 add . /src
 workdir /src
-env GO111MODULE on
-run go build -mod=vendor .
+run go build .
 
 from alpine:latest as certs
 run apk --update add ca-certificates
