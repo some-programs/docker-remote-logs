@@ -8,7 +8,7 @@
   </head>
   <body>
     <p><strong>{{ .Container.Name }}</strong> <strong id="interval"></strong></p>
-    <button type="button"  onclick="toggleSwitch();">→</button>
+    <button type="button"  onclick="logsApp.toggleSwitch();">→</button>
     <div class="popup hidden" id="switch">
       <table>
         <tr>
@@ -20,7 +20,7 @@
         {{ range .Containers }}
         <tr>
           <td class="nowrap">
-            <button type="button" onclick="switchLogs('{{ .ID }}');">→</button>
+            <button type="button" onclick="logsApp.switchLogs('{{ .ID }}');">→</button>
           </td>
           <td class="nowrap">{{ .Name }}</td>
           <td class="nowrap">{{ .Status }}</td>
@@ -29,10 +29,10 @@
         {{ end }}
       </table>
     </div>
-    <button type="button" onclick="follow();">⇊follow⇊</button>
-    <button type="button" id="autoscroll" onclick="toggleScroll();">auto scroll</button>
-    <button type="button" id="wraplines" onclick="toggleWrap();">line wrapping</button>
-    <button type="button" id="timestamps" onclick="toggleTimestamps();">timestamps</button>
+    <button type="button" onclick="logsApp.follow();">⇊follow⇊</button>
+    <button type="button" id="autoscroll" onclick="logsApp.toggleScroll();">auto scroll</button>
+    <button type="button" id="wraplines" onclick="logsApp.toggleWrap();">line wrapping</button>
+    <button type="button" id="timestamps" onclick="logsApp.toggleTimestamps();">timestamps</button>
     <pre id="log" class="hidets"></pre>
   </body>
   <script>
@@ -45,5 +45,8 @@
     conn_url += "//" + window.location.host + "{{ .StreamURL }}";
   </script>
   <script type="text/javascript" src="/static/js/common.js"></script>
-  <script type="text/javascript" src="/static/js/container.js"></script>
+  <script type="text/javascript" src="/static/js/logs.js"></script>
+  <script>
+    window.logsApp = new LogsApp();
+  </script>
 </html>

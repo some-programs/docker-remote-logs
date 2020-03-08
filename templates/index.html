@@ -9,15 +9,15 @@
   <body>
     <div>
       <p>
-        | <input type=checkbox id=stdout checked onchange="updateFields(event)"> stdout
-        | <input type=checkbox id=stderr checked onchange="updateFields(event)"> stderr
-        | <input type=checkbox id=timestamps onchange="updateFields(event)"> timestamps (download only)
-        | <input type=checkbox id=follow checked onchange="updateFields(event)">follow (view only)
+        | <input type=checkbox id=stdout checked onchange="indexApp.updateFields(event)"> stdout
+        | <input type=checkbox id=stderr checked onchange="indexApp.updateFields(event)"> stderr
+        | <input type=checkbox id=timestamps onchange="indexApp.updateFields(event)"> timestamps (download only)
+        | <input type=checkbox id=follow checked onchange="indexApp.updateFields(event)">follow (view only)
       </p>
       <p>
-        | tail:<input type="text" id=tail value="300" maxlength="8" size="6" onchange="updateFields(event)">
-        | since:<input type="text" id=since onchange="updateFields(event)">
-        | until:<input type="text" id=until onchange="updateFields(event)">
+        | tail:<input type="text" id=tail value="300" maxlength="8" size="6" onchange="indexApp.updateFields(event)">
+        | since:<input type="text" id=since onchange="indexApp.updateFields(event)">
+        | until:<input type="text" id=until onchange="indexApp.updateFields(event)">
       </p>
     </div>
     <script type="text/javascript" src="/static/js/common.js"></script>
@@ -32,8 +32,8 @@
       {{ range .Containers }}
       <tr>
         <td class="nowrap">
-          <button type="button" onclick="viewLogs('{{ .ID }}');">view</button>
-          <button type="button" onclick="downloadLogs('{{ .ID }}');">dl</button>
+          <button type="button" onclick="indexApp.viewLogs('{{ .ID }}');">view</button>
+          <button type="button" onclick="indexApp.downloadLogs('{{ .ID }}');">dl</button>
         </td>
         <td class="nowrap">{{ .Name }}</td>
         <td class="nowrap">{{ .Status }}</td>
@@ -41,9 +41,9 @@
       </tr>
       {{ end }}
     </table>
-    <p><button type="button" onclick="downloadZip();">download all logs as zip file</button></p>
+    <p><button type="button" onclick="indexApp.downloadZip();">download all logs as zip file</button></p>
   </body>
   <script type="text/javascript">
-    loadSettings();
+    window.indexApp=new IndexApp();
   </script>
 </html>

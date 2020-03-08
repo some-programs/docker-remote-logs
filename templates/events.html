@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>index</title>
+    <link rel="stylesheet" href="/static/css/common.css" type="text/css" />
+    <link rel="stylesheet" href="/static/css/container.css" type="text/css" />
+  </head>
+  <body>
+    <p><strong>events</strong> <strong id="interval"></strong></p>
+    <pre id="log" class="hidets"></pre>
+  </body>
+  <script>
+    var conn_url="";
+    if (window.location.protocol === "https:") {
+      conn_url = "wss:";
+    } else {
+      conn_url = "ws:";
+    }
+    conn_url += "//" + window.location.host + "{{ .StreamURL }}";
+  </script>
+  <script type="text/javascript" src="/static/js/common.js"></script>
+  <script type="text/javascript" src="/static/js/events.js"></script>
+  <script>
+    window.eventsApp = new EventsApp();
+  </script>
+</html>

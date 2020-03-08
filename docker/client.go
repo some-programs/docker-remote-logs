@@ -127,6 +127,7 @@ func (d *Client) ContainerLogs(ctx context.Context, id string, options types.Con
 			select {
 			case messages <- buffer.String():
 			case <-ctx.Done():
+				// return // TODO: maybe return here
 			}
 			buffer.Reset()
 		}
