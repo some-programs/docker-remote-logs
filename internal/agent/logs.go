@@ -1,4 +1,4 @@
-package main
+package agent
 
 import (
 	"archive/zip"
@@ -13,7 +13,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/gorilla/websocket"
-	"github.com/thomasf/docker-remote-logs/docker"
+	"github.com/thomasf/docker-remote-logs/internal/docker"
 )
 
 var (

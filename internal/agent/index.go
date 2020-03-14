@@ -1,4 +1,4 @@
-package main
+package agent
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/thomasf/docker-remote-logs/docker"
+	"github.com/thomasf/docker-remote-logs/internal/docker"
 )
 
 var (

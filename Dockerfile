@@ -13,3 +13,4 @@ copy --from=builder /src/docker-remote-logs /docker-remote-logs
 copy --from=builder /src/templates /templates
 copy --from=builder /src/static /static
 entrypoint ["/docker-remote-logs"]
+cmd ["agent"]
