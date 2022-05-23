@@ -1,4 +1,4 @@
-from golang:1.14 as builder
+from golang:1.18 as builder
 add . /src
 workdir /src
 run go build .
