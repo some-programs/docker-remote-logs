@@ -3,13 +3,14 @@
     "incremental": true,
     "target": "es6",
     "module": "none",
-    "outDir": "./static/js",
-    "rootDir": "./static/ts",
+    "outDir": "./assets/static/js",
     "strict": true,
     "alwaysStrict": true,
     "noUnusedLocals": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "declaration": false
-  }
+    "declaration": false,
+    "tsBuildInfoFile": "./.cache/ts"
+  },
+  "include": ["ts/**/*"]
 }

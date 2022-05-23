@@ -3,7 +3,7 @@ package agent
 import (
 	"context"
 	"flag"
-	"io/ioutil"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -15,6 +15,7 @@ import (
 	"github.com/google/subcommands"
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/thomasf/docker-remote-logs/assets"
 	"github.com/thomasf/docker-remote-logs/internal/docker"
 )
 
@@ -70,7 +71,7 @@ func (p *AgentCmd) run(ctx context.Context) error {
 	http.HandleFunc("/logs", h.logs)
 	http.HandleFunc("/events", h.event)
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(assets.Static))))
 	http.HandleFunc("/", h.index)
 	srv := &http.Server{Addr: p.addr, Handler: http.DefaultServeMux}
 	go func() {
@@ -123,7 +124,7 @@ const (
 )
 
 func mustReadFile(path string) string {
-	data, err := ioutil.ReadFile(path)
+	data, err := fs.ReadFile(assets.Templates, path)
 	if err != nil {
 		panic(err)
 	}
