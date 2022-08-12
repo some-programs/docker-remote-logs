@@ -71,7 +71,7 @@ func (p *AgentCmd) run(ctx context.Context) error {
 	http.HandleFunc("/logs", h.logs)
 	http.HandleFunc("/events", h.event)
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(assets.Static))))
+	http.Handle("/static/", http.FileServer(http.FS(assets.Static)))
 	http.HandleFunc("/", h.index)
 	srv := &http.Server{Addr: p.addr, Handler: http.DefaultServeMux}
 	go func() {
