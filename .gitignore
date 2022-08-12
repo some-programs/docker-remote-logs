@@ -1,3 +1,4 @@
 docker-remote-logs
 /tsconfig.tsbuildinfo
 /.cache
+/node_modules/
