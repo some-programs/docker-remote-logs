@@ -8,7 +8,7 @@ platform:
 
 steps:
 - name: build
-  image: "golang:1.18"
+  image: "golang:1.19"
   commands:
   - go build -v .
   - go test -v ./...
