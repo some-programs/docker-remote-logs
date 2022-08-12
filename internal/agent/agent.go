@@ -15,8 +15,8 @@ import (
 	"github.com/google/subcommands"
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/thomasf/docker-remote-logs/assets"
-	"github.com/thomasf/docker-remote-logs/internal/docker"
+	"github.com/some-programs/docker-remote-logs/assets"
+	"github.com/some-programs/docker-remote-logs/internal/docker"
 )
 
 type AgentCmd struct {

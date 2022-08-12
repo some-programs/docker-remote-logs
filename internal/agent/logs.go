@@ -13,7 +13,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/gorilla/websocket"
-	"github.com/thomasf/docker-remote-logs/internal/docker"
+	"github.com/some-programs/docker-remote-logs/internal/docker"
 )
 
 var (

@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-pa/fenv"
 	"github.com/google/subcommands"
-	"github.com/thomasf/docker-remote-logs/internal/agent"
+	"github.com/some-programs/docker-remote-logs/internal/agent"
 )
 
 func main() {

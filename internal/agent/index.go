@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/thomasf/docker-remote-logs/internal/docker"
+	"github.com/some-programs/docker-remote-logs/internal/docker"
 )
 
 var (

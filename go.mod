@@ -1,4 +1,4 @@
-module github.com/thomasf/docker-remote-logs
+module github.com/some-programs/docker-remote-logs
 
 go 1.19
 
