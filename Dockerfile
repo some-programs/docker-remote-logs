@@ -1,6 +1,8 @@
 from golang:1.19 as builder
-add . /src
 workdir /src
+add go.mod go.sum /src/
+run go mod download
+add . /src
 run go build .
 
 from alpine:latest as certs
